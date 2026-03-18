@@ -1,6 +1,6 @@
 [package]
 name = "act_rs_smol"
-version = "0.1.0"
+version = "0.2.0-alpha"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Act.rs smol is a minimal smol oriented actor framework."
@@ -12,14 +12,14 @@ authors = ["Paul Saunders"]
 
 [dependencies]
 
-act_rs = "0.4.0"
+#act_rs = "0.4.0"
 
-#act_rs = { path="../act_rs" } #, features = ["async-trait"] } #Do not remove
+act_rs = { path="../act_rs" } #, features = ["async-trait"] } #Do not remove
 
 smol = "2.0.2"
 
-#[features]
-
+[features]
+async-trait = ["act_rs/async-trait"]
 
 #[package.metadata.docs.rs]
 #all-features = true
