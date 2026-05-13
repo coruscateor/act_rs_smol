@@ -4,7 +4,9 @@ version = 4
 
 [[package]]
 name = "act_rs"
-version = "0.5.0-alpha"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edac2b52b128aceef4f6d0be41a54aa356c0c4d09aef74439de9696b3e275074"
 dependencies = [
  "async-trait",
 ]

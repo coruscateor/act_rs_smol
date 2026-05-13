@@ -1,4 +1,4 @@
-use std::ops::Deref;
+//use std::ops::Deref;
 
 use smol::Task;
 
@@ -24,6 +24,13 @@ impl<T, M> AutoDetachTask<T, M>
 
     }
 
+    pub fn task_ref(&self) -> &Task<T, M>
+    {
+
+        self.task.as_ref().expect("Task must be present.")
+
+    } 
+
     pub fn take(mut self) -> Task<T, M>
     {
 
@@ -33,6 +40,9 @@ impl<T, M> AutoDetachTask<T, M>
 
 }
 
+//Disbaled
+
+/*
 impl<T, M> Deref for AutoDetachTask<T, M>
 {
 
@@ -46,6 +56,7 @@ impl<T, M> Deref for AutoDetachTask<T, M>
     }
 
 }
+*/
 
 impl<T, M> Drop for AutoDetachTask<T, M>
 {

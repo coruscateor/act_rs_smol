@@ -36,7 +36,7 @@
 
 */
 #[macro_export]
-macro_rules! impl_mac_task_actor
+macro_rules! impl_task_actor
 {
 
     ($actor_type:ident) =>
@@ -52,7 +52,7 @@ macro_rules! impl_mac_task_actor
             impl $actor_type
             {
 
-                pub fn spawn(state: [<$actor_type State>], ex: &Executor)
+                pub fn spawn(state: [<$actor_type State>], ex: &Executor) -> AutoDetachTask<()>
                 {
                     
                     let task = ex.spawn(async move {
@@ -61,18 +61,7 @@ macro_rules! impl_mac_task_actor
 
                     });
 
-                    task.detach();
-
-                }
-
-                pub fn spawn_attached(state: [<$actor_type State>], ex: &Executor) -> Task<()>
-                {
-                    
-                    ex.spawn(async move {
-                
-                        $actor_type::run(state).await;
-
-                    })
+                    AutoDetachTask::new(task)
 
                 }
 
@@ -115,7 +104,7 @@ macro_rules! impl_mac_task_actor
  * Note that if build_async returns a None value then none of the run methods are called (including post_run_async).
 */
 #[macro_export]
-macro_rules! impl_mac_task_actor_built_state
+macro_rules! impl_task_actor_build_state
 {
 
     ($actor_type:ident) =>
@@ -131,55 +120,45 @@ macro_rules! impl_mac_task_actor_built_state
             impl $actor_type
             {
 
-                pub fn spawn(state_builder: [<$actor_type StateBuilder>], ex: &Executor)
+                pub fn spawn_and_build_state(state_builder: [<$actor_type StateBuilder>], ex: &Executor) -> AutoDetachTask<()>
                 {
-                    
-                    let task = ex.spawn(async move {
 
-                        $actor_type::run(state_builder).await;
+                    let task = ex.spawn(async move
+                    {
+
+                        let opt_state = state_builder.build_async().await;
+
+                        if let Some(state) = opt_state
+                        {
+
+                            $actor_type::run(state).await;
+
+                        }
 
                     });
 
-                    task.detach();
-
-                }
-
-                pub fn spawn_attached(state_builder: [<$actor_type StateBuilder>], ex: &Executor) -> Task<()>
-                {
-                    
-                    let task = ex.spawn(async move {
-
-                        $actor_type::run(state_builder).await;
-
-                    })
+                    AutoDetachTask::new(task)
 
                 }
 
                 async fn run(mut state_builder: [<$actor_type StateBuilder>])
                 {
 
-                    let mut opt_state = state_builder.build_async().await;
-
-                    if let Some(mut state) = opt_state
+                    if state.pre_run_async().await
                     {
 
                         let mut proceed = true; 
-                        
-                        if state.pre_run_async().await
+
+                        while proceed
                         {
-
-                            while proceed
-                            {
-                                
-                                proceed = state.run_async().await;
-                    
-                            }
-
+                            
+                            proceed = state.run_async().await;
+                
                         }
 
-                        state.post_run_async().await;
-
                     }
+
+                    state.post_run_async().await;
 
                 }
 

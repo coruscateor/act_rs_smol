@@ -4,6 +4,8 @@ use smol::{Executor, Task};
 
 use act_rs::ActorStateAsync;
 
+use crate::AutoDetachTask;
+
 ///
 /// A task based actor.
 /// 
@@ -14,29 +16,18 @@ pub struct TaskActor
 impl TaskActor
 {
 
-    pub fn spawn<ST>(state: ST, ex: &Executor)
+    pub fn spawn<ST>(state: ST, ex: &Executor) -> AutoDetachTask<()>
         where ST: ActorStateAsync + Send + 'static
     {
         
-        let task = ex.spawn(async move {
+        let task = ex.spawn(async move
+        {
     
             TaskActor::run(state).await;
 
         });
 
-        task.detach();
-
-    }
-
-    pub fn spawn_attached<ST>(state: ST, ex: &Executor) -> Task<()>
-        where ST: ActorStateAsync + Send + 'static
-    {
-        
-        ex.spawn(async move {
-    
-            TaskActor::run(state).await;
-
-        })
+        AutoDetachTask::new(task)
 
     }
 
