@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 
-//#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "async-trait")]
 mod task_actor;
@@ -8,9 +8,9 @@ mod task_actor;
 #[cfg(feature = "async-trait")]
 pub use task_actor::*;
 
-mod mac_task_actors;
+mod task_actor_macros;
 
-pub use mac_task_actors::*;
+pub use task_actor_macros::*;
 
 mod auto_detach_task;
 
