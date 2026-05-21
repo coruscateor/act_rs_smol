@@ -55,7 +55,8 @@ macro_rules! impl_task_actor
                 pub fn spawn(state: [<$actor_type State>], ex: &Executor) -> AutoDetachTask<()>
                 {
                     
-                    let task = ex.spawn(async move {
+                    let task = ex.spawn(async move
+                    {
 
                         $actor_type::run(state).await;
 
@@ -170,4 +171,146 @@ macro_rules! impl_task_actor_build_state
 
 }
 
+#[macro_export]
+macro_rules! impl_task_actor_build_state_with_spawn
+{
 
+    ($actor_type:ident) =>
+    {
+
+        paste!
+        {
+
+            
+            pub struct $actor_type
+            {
+            }
+            
+            impl $actor_type
+            {
+
+                pub fn spawn(state: [<$actor_type State>], ex: &Executor)  -> AutoDetachTask<()>
+                {
+                    
+                    let task = ex.spawn(async move
+                    {
+
+                        $actor_type::run(state).await;
+
+                    });
+
+                    AutoDetachTask::new(task)
+
+                }
+
+                pub fn spawn_and_build_state(state_builder: [<$actor_type StateBuilder>], ex: &Executor) -> AutoDetachTask<()>
+                {
+                    
+                    let task = ex.spawn(async move
+                    {
+
+                        let opt_state = state_builder.build_async().await;
+
+                        if let Some(state) = opt_state
+                        {
+
+                            $actor_type::run(state).await;
+
+                        }
+
+                    });
+
+                    AutoDetachTask::new(task)
+
+                }
+
+                async fn run(mut state: [<$actor_type State>])
+                {
+                    
+                    if state.pre_run_async().await
+                    {
+
+                        let mut proceed = true; 
+
+                        while proceed
+                        {
+                            
+                            proceed = state.run_async().await;
+                
+                        }
+
+                    }
+
+                    state.post_run_async().await;
+
+                }
+
+            }
+            
+        }
+
+    }
+
+}
+
+//ActorFlow Compatible
+
+#[macro_export]
+macro_rules! impl_task_actor_flexible
+{
+
+    ($actor_type:ident) =>
+    {
+
+        paste!
+        {
+
+            pub struct $actor_type
+            {
+            }
+
+            impl $actor_type
+            {
+
+                pub fn spawn(state: [<$actor_type State>], ex: &Executor)  -> AutoDetachTask<()>
+                {
+                    
+                    let task = ex.spawn(async move
+                    {
+
+                        $actor_type::run(state).await;
+
+                    })
+
+                    AutoDetachTask::new(task)
+
+                }
+
+                async fn run(mut state: [<$actor_type State>])
+                {
+                    
+                    if state.pre_run_async().await.into()
+                    {
+
+                        let mut proceed = true; 
+
+                        while proceed
+                        {
+                            
+                            proceed = state.run_async().await.into()
+                
+                        }
+
+                    }
+
+                    state.post_run_async().await;
+
+                }
+
+            }
+            
+        }
+
+    }
+
+}
