@@ -1,6 +1,0 @@
-{
-    "rust-analyzer.cargo.features": [
-        "async-trait",
-        "thread_pool"
-    ]
-}
