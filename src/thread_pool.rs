@@ -9,7 +9,7 @@ use accessorise::impl_get_ref;
 
 use inc_dec::IncDecSelf;
 
-use smol::{Executor, spawn};
+use smol::Executor;
 
 use smol::channel::{Sender, unbounded};
 
@@ -17,19 +17,19 @@ use futures_lite::future;
 
 use pastey::paste;
 
-pub struct ThreadPool //<'a>
+pub struct ThreadPool
 {
 
     join_handles: Vec<JoinHandle<()>>,
     _signal: Sender<()>,
-    is_joining: bool
+    executor: Arc<Executor<'static>>
 
 }
 
-impl ThreadPool //<'a>
+impl ThreadPool
 {
 
-    pub fn new(arc_ex: &Arc<Executor<'static>>) -> Result<Self, Error>
+    pub fn new(arc_ex: Arc<Executor<'static>>) -> Result<Self, Error>
     {
 
         let avalible_parallelism_res = available_parallelism();
@@ -44,44 +44,6 @@ impl ThreadPool //<'a>
 
                 Ok(thread_pool)
 
-                /*
-                let join_handles = thread::scope(|scope| //: &'a Scope<'a, '_>| //<'a, _, Vec<ScopedJoinHandle<'a, ()>>
-                {
-
-                    let mut number_of_threads: usize = val.into();
-
-                    let mut new_join_handles = Vec::with_capacity(number_of_threads);
-
-                    while number_of_threads > 0
-                    {
-
-                        let sjh = scope.spawn(||
-                        { 
-                            
-                            future::block_on(ex.run(shutdown.recv())); 
-                        
-                        });
-
-                        /*
-                        let jh = thread::spawn(||
-                        { 
-                            
-                            future::block_on(ex.run(shutdown.recv())); 
-                        
-                        });
-                        */
-
-                        new_join_handles.push(sjh);
-
-                        number_of_threads.mm();
-
-                    }
-
-                    new_join_handles
-
-                });
-                */
-
             }
             Err(err) =>
             {
@@ -93,7 +55,7 @@ impl ThreadPool //<'a>
 
     }
 
-    pub fn with_threads(arc_ex: &Arc<Executor<'static>>, number: NonZero<usize>) -> Self
+    pub fn with_threads(arc_ex: Arc<Executor<'static>>, number: NonZero<usize>) -> Self
     {
 
         let (_signal, shutdown) = unbounded::<()>();
@@ -128,62 +90,50 @@ impl ThreadPool //<'a>
 
         };
 
-        Self { join_handles, _signal, is_joining: false }
+        Self { join_handles, _signal, executor: arc_ex }
 
     }
 
-    pub fn new_and_executor() -> (Result<Self, Error>, Arc<Executor<'static>>)
+    pub fn new_and_executor() -> Result<Self, Error>
     {
 
         let ex: Executor<'static> = Executor::new();
 
         let arc_ex = Arc::new(ex);
 
-        let res = Self::new(&arc_ex);
+        let res = Self::new(arc_ex);
 
-        (res, arc_ex)
+        res
 
     }
 
-    pub fn with_threads_and_executor(number: NonZero<usize>) -> (Self, Arc<Executor<'static>>)
+    pub fn with_threads_and_executor(number: NonZero<usize>) -> Self
     {
 
         let ex: Executor<'static> = Executor::new();
 
         let arc_ex = Arc::new(ex);
 
-        let res = Self::with_threads(&arc_ex, number);
+        let res = Self::with_threads(arc_ex, number);
 
-        (res, arc_ex)
+        res
 
     }
 
     pub fn number_of_threads(&self) -> usize
     {
 
-        let len = self.join_handles.len();
-
-        if self.is_joining
-        {
-
-            len + 1
-
-        }
-        else
-        {
-
-            len
-            
-        }
+        self.join_handles.len()
 
     }
 
     impl_get_ref!(join_handles, Vec<JoinHandle<()>>);
 
+    impl_get_ref!(executor, Arc<Executor<'static>>);
+
+    /*
     pub fn join(mut self) -> Vec<Result<(), Box<dyn Any + Send>>>
     {
-
-        self.is_joining = true;
         
         let mut join_results = Vec::new();
 
@@ -197,11 +147,20 @@ impl ThreadPool //<'a>
         join_results
 
     }
+    */
 
     pub fn take_join_handles(self) -> Vec<JoinHandle<()>>
     {
 
         self.join_handles
+
+    }
+
+    pub fn block_on<F, T>(&self, func: F) -> T
+        where F: AsyncFnOnce(&Self) -> T
+    {
+
+        future::block_on(func(self))
 
     }
 
