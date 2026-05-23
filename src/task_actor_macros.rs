@@ -462,3 +462,163 @@ macro_rules! impl_task_actor_build_state_with_spawn_flexible
     }
 
 }
+
+//catch_unwind
+
+
+
+
+#[macro_export]
+macro_rules! impl_task_actor_catch_unwind
+{
+
+    ($actor_type:ident, $panic_handler_type:ty) =>
+    {
+
+        paste!
+        {
+
+            pub struct $actor_type
+            {
+            }
+
+            impl $actor_type
+            {
+
+                pub fn spawn_catch_unwind(state: [<$actor_type State>], panic_handler: &Arc<$panic_handler_type>, ex: &Executor)  -> AutoDetachTask<()>
+                {
+                    
+                    let panic_handler_clone = panic_handler.clone();
+                    
+                    let task = ex.spawn(async move
+                    {
+
+                        if let Err(err) = $actor_type::run_catch_unwind(state).catch_unwind().await
+                        {
+
+                            panic_handler_clone.handle_panic(err).await;
+
+                        }
+
+                    });
+
+                    AutoDetachTask::new(task)
+
+                }
+
+                async fn run_catch_unwind(mut state: [<$actor_type State>])
+                {
+                    
+                    if AssertUnwindSafe(state.pre_run_async()).await
+                    {
+
+                        let mut proceed = true; 
+
+                        while proceed
+                        {
+                            
+                            proceed = AssertUnwindSafe(state.run_async()).await;
+                
+                        }
+
+                    }
+                    
+                    AssertUnwindSafe(state.post_run_async()).await;
+
+                }
+
+            }
+            
+        }
+
+    }
+
+}
+
+#[macro_export]
+macro_rules! impl_task_actor_build_state_and_catch_unwind
+{
+
+    ($actor_type:ident, $panic_handler_type:ty) =>
+    {
+
+        paste!
+        {
+
+            pub struct $actor_type
+            {
+            }
+
+            impl $actor_type
+            {
+
+                pub fn spawn_build_state_and_catch_unwind(state_builder: [<$actor_type StateBuilder>], panic_handler: &Arc<$panic_handler_type>, ex: &Executor)  -> AutoDetachTask<()>
+                {
+                    
+                    let panic_handler_clone = panic_handler.clone();
+
+                    let task = ex.spawn(async move
+                    {
+
+                        match AssertUnwindSafe(state_builder.build_async()).catch_unwind().await
+                        {
+
+                            Ok(opt_state) =>
+                            {
+
+                                if let Some(state) = opt_state
+                                {
+
+                                    if let Err(err) = $actor_type::run_catch_unwind(state).catch_unwind().await
+                                    {
+
+                                        panic_handler_clone.handle_panic(err).await;
+
+                                    }
+
+                                }
+
+                            }
+                            Err(err) =>
+                            {
+
+                                panic_handler_clone.handle_panic(err).await;
+
+                            }
+                            
+                        }
+
+                    });
+
+                    AutoDetachTask::new(task)
+
+                }
+
+                async fn run_catch_unwind(mut state: [<$actor_type State>])
+                {
+                    
+                    if AssertUnwindSafe(state.pre_run_async()).await
+                    {
+
+                        let mut proceed = true; 
+
+                        while proceed
+                        {
+                            
+                            proceed = AssertUnwindSafe(state.run_async()).await;
+                
+                        }
+
+                    }
+                    
+                    AssertUnwindSafe(state.post_run_async()).await;
+
+                }
+
+            }
+            
+        }
+
+    }
+
+}
