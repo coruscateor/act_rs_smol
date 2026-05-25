@@ -26,9 +26,11 @@ accessorise = { version = "0.2.0", optional = true }
 
 pastey = { version = "0.2.3", optional = true }
 
+futures = { version ="0.3.32", optional = true }
+
 [features]
 async-trait = ["act_rs/async-trait"]
-thread_pool = ["inc_dec", "futures-lite", "accessorise", "pastey"]
+thread_pool = ["inc_dec", "accessorise", "pastey"] #"futures-lite", 
 
 [package.metadata.docs.rs]
 all-features = true

@@ -142,7 +142,7 @@ macro_rules! impl_task_actor_build_state
 
                 }
 
-                async fn run(mut state_builder: [<$actor_type StateBuilder>])
+                async fn run(mut state: [<$actor_type State>])
                 {
 
                     if state.pre_run_async().await
@@ -280,7 +280,7 @@ macro_rules! impl_task_actor_flexible
 
                         $actor_type::run(state).await;
 
-                    })
+                    });
 
                     AutoDetachTask::new(task)
 

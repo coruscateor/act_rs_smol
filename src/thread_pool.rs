@@ -1,6 +1,7 @@
-use std::any::Any;
 use std::num::NonZero;
+
 use std::sync::Arc;
+
 use std::thread::{self, JoinHandle, Scope, ScopedJoinHandle, Thread, available_parallelism};
 
 use std::io::Error;
@@ -13,7 +14,11 @@ use smol::Executor;
 
 use smol::channel::{Sender, unbounded};
 
-use futures_lite::future;
+#[cfg(feature = "futures-lite")]
+use futures_lite::future::block_on;
+
+#[cfg(feature = "futures")]
+use futures::executor::block_on;
 
 use pastey::paste;
 
@@ -76,7 +81,7 @@ impl ThreadPool
                 let jh = thread::spawn(move ||
                 { 
                     
-                    let _ = future::block_on(ex_moved.run(shutdown_moved.recv())); 
+                    let _ = block_on(ex_moved.run(shutdown_moved.recv())); 
                 
                 });
 
@@ -160,22 +165,8 @@ impl ThreadPool
         where F: AsyncFnOnce(&Self) -> T
     {
 
-        future::block_on(func(self))
+        block_on(func(self))
 
     }
 
 }
-
-/*
-impl Drop for ThreadPool
-{
-
-    fn drop(&mut self)
-    {
-        
-        self.signal.send(());
-
-    }
-
-}
-*/

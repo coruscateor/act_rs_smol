@@ -4,6 +4,7 @@ use smol::channel::{Receiver, Sender, unbounded};
 
 use pastey::paste;
 
+use std::num::{NonZeroU32, NonZeroUsize};
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use smol::Executor;
@@ -16,6 +17,8 @@ use std::sync::Arc;
 use futures::FutureExt;
 
 use crate::{impl_task_actor, impl_task_actor_build_state, impl_task_actor_build_state_and_catch_unwind, impl_task_actor_build_state_and_catch_unwind_flexible, impl_task_actor_build_state_flexible, impl_task_actor_build_state_with_spawn, impl_task_actor_build_state_with_spawn_catch_unwind, impl_task_actor_build_state_with_spawn_catch_unwind_flexible, impl_task_actor_build_state_with_spawn_flexible, impl_task_actor_catch_unwind, impl_task_actor_catch_unwind_flexible, impl_task_actor_flexible};
+
+use crate::ThreadPool;
 
 struct TestActorState
 {
@@ -42,7 +45,7 @@ impl TestActorState
     pub async fn pre_run_async(&mut self) -> bool
     {
 
-        self.sender.send(1).await;
+        self.sender.send(1).await.unwrap();
 
         true
 
@@ -51,7 +54,7 @@ impl TestActorState
     pub async fn run_async(&mut self) -> bool
     {
 
-        self.sender.send(2).await;
+        self.sender.send(2).await.unwrap();
 
         false
 
@@ -60,7 +63,7 @@ impl TestActorState
     pub async fn post_run_async(self)
     {
 
-        self.sender.send(3).await;
+        self.sender.send(3).await.unwrap();
 
     }
     
@@ -91,7 +94,7 @@ impl TestActorStateBuilder
     pub async fn build_async(self) -> Option<TestActorState>
     {
 
-        self.sender.send(0).await;
+        self.sender.send(0).await.unwrap();
 
         Some(TestActorState::new(self.sender))
 
@@ -126,7 +129,7 @@ impl TestActorFlowState
     pub async fn pre_run_async(&mut self) -> ActorFlow
     {
 
-        self.sender.send(1).await;
+        self.sender.send(1).await.unwrap();
 
         ActorFlow::Proceed
 
@@ -135,7 +138,7 @@ impl TestActorFlowState
     pub async fn run_async(&mut self) -> ActorFlow
     {
 
-        self.sender.send(2).await;
+        self.sender.send(2).await.unwrap();
 
         ActorFlow::Exit
 
@@ -144,7 +147,7 @@ impl TestActorFlowState
     pub async fn post_run_async(self)
     {
 
-        self.sender.send(3).await;
+        self.sender.send(3).await.unwrap();
 
     }
     
@@ -175,7 +178,7 @@ impl TestActorFlowStateBuilder
     pub async fn build_async(self) -> Option<TestActorFlowState>
     {
 
-        self.sender.send(0).await;
+        self.sender.send(0).await.unwrap();
 
         Some(TestActorFlowState::new(self.sender))
 
@@ -206,7 +209,7 @@ impl TestPaincHander
 
 //
 
-async fn without_builder(mut receiver: Receiver<i32>)
+async fn without_builder(receiver: Receiver<i32>)
 {
 
     let res = receiver.recv().await;
@@ -223,7 +226,7 @@ async fn without_builder(mut receiver: Receiver<i32>)
 
 }
 
-async fn with_builder(mut receiver: Receiver<i32>)
+async fn with_builder(receiver: Receiver<i32>)
 {
 
     let res = receiver.recv().await;
@@ -234,267 +237,343 @@ async fn with_builder(mut receiver: Receiver<i32>)
 
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor()
+fn get_nonzero_2() -> NonZeroUsize
+{
+
+    NonZeroUsize::new(2).unwrap()
+
+}
+
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor()
 {
 
     impl_task_actor!(TestActor);
 
-    let (sender, receiver) = unbounded();
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
+        
+        let (sender, receiver) = unbounded();
 
-    let state = TestActorState::new(sender);
+        let state = TestActorState::new(sender);
 
-    TestActor::spawn(state);
+        TestActor::spawn(state, this.executor_ref());
 
-    without_builder(receiver).await;
+        without_builder(receiver).await;
+
+    });
 
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_build_state()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_build_state()
 {
 
     impl_task_actor_build_state!(TestActor);
 
-    let (sender, receiver) = unbounded();
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let state_builder = TestActorStateBuilder::new(sender);
+        let (sender, receiver) = unbounded();
 
-    TestActor::spawn_and_build_state(state_builder);
+        let state_builder = TestActorStateBuilder::new(sender);
 
-    with_builder(receiver).await;
+        TestActor::spawn_and_build_state(state_builder, this.executor_ref());
+
+        with_builder(receiver).await;
+
+    });
 
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_build_state_with_spawn()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_build_state_with_spawn()
 {
 
     impl_task_actor_build_state_with_spawn!(TestActor);
 
-    //
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let (sender, receiver) = unbounded();
+        let (sender, receiver) = unbounded();
 
-    let state = TestActorState::new(sender);
+        let state = TestActorState::new(sender);
 
-    TestActor::spawn(state);
+        TestActor::spawn(state, this.executor_ref());
 
-    without_builder(receiver).await;
+        without_builder(receiver).await;
 
-    //
+        //
 
-    let (sender, receiver) = unbounded();
+        let (sender, receiver) = unbounded();
 
-    let state_builder = TestActorStateBuilder::new(sender);
+        let state_builder = TestActorStateBuilder::new(sender);
 
-    TestActor::spawn_and_build_state(state_builder);
+        TestActor::spawn_and_build_state(state_builder, this.executor_ref());
 
-    with_builder(receiver).await;
+        with_builder(receiver).await;
+
+    });
+
 
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_flexible()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_flexible()
 {
 
     impl_task_actor_flexible!(TestActorFlow);
 
-    let (sender, receiver) = unbounded();
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let state = TestActorFlowState::new(sender);
+        let (sender, receiver) = unbounded();
 
-    TestActorFlow::spawn(state);
+        let state = TestActorFlowState::new(sender);
 
-    without_builder(receiver).await;
+        TestActorFlow::spawn(state, this.executor_ref());
+
+        without_builder(receiver).await;
+
+    });
 
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_build_state_flexible()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_build_state_flexible()
 {
 
     impl_task_actor_build_state_flexible!(TestActorFlow);
 
-    let (sender, receiver) = unbounded();
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let state_builder = TestActorFlowStateBuilder::new(sender);
+        let (sender, receiver) = unbounded();
 
-    TestActorFlow::spawn_and_build_state(state_builder);
+        let state_builder = TestActorFlowStateBuilder::new(sender);
 
-    with_builder(receiver).await;
+        TestActorFlow::spawn_and_build_state(state_builder, this.executor_ref());
+
+        with_builder(receiver).await;
+
+    });
 
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_build_state_with_spawn_flexible()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_build_state_with_spawn_flexible()
 {
 
     impl_task_actor_build_state_with_spawn_flexible!(TestActorFlow);
 
-    //
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let (sender, receiver) = unbounded();
+        let (sender, receiver) = unbounded();
 
-    let state = TestActorFlowState::new(sender);
+        let state = TestActorFlowState::new(sender);
 
-    TestActorFlow::spawn(state);
+        TestActorFlow::spawn(state, this.executor_ref());
 
-    without_builder(receiver).await;
+        without_builder(receiver).await;
 
-    //
+        //
 
-    let (sender, receiver) = unbounded();
+        let (sender, receiver) = unbounded();
 
-    let state_builder = TestActorFlowStateBuilder::new(sender);
+        let state_builder = TestActorFlowStateBuilder::new(sender);
 
-    TestActorFlow::spawn_and_build_state(state_builder);
+        TestActorFlow::spawn_and_build_state(state_builder, this.executor_ref());
 
-    with_builder(receiver).await;
+        with_builder(receiver).await;
+
+    });
 
 }
 
 //catch_unwind
 
 #[cfg(feature="futures")]
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_catch_unwind()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_catch_unwind()
 {
 
-    impl_task_actor_catch_unwind!(TestActor, TestPaincHander);
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let (sender, receiver) = unbounded();
+        impl_task_actor_catch_unwind!(TestActor, TestPaincHander);
 
-    let state = TestActorState::new(sender);
+        let (sender, receiver) = unbounded();
 
-    let panic_handler = Arc::new(TestPaincHander::new());
+        let state = TestActorState::new(sender);
 
-    TestActor::spawn_catch_unwind(state, &panic_handler);
+        let panic_handler = Arc::new(TestPaincHander::new());
 
-    without_builder(receiver).await;
+        TestActor::spawn_catch_unwind(state, &panic_handler, this.executor_ref());
+
+        without_builder(receiver).await;
+
+    });
 
 }
 
 #[cfg(feature="futures")]
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_build_state_and_catch_unwind()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_build_state_and_catch_unwind()
 {
 
     impl_task_actor_build_state_and_catch_unwind!(TestActor, TestPaincHander);
 
-    let (sender, receiver) = unbounded();
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let state_builder = TestActorStateBuilder::new(sender);
+        let (sender, receiver) = unbounded();
 
-    let panic_handler = Arc::new(TestPaincHander::new());
+        let state_builder = TestActorStateBuilder::new(sender);
 
-    TestActor::spawn_build_state_and_catch_unwind(state_builder, &panic_handler);
+        let panic_handler = Arc::new(TestPaincHander::new());
 
-    with_builder(receiver).await;
+        TestActor::spawn_build_state_and_catch_unwind(state_builder, &panic_handler, this.executor_ref());
+
+        with_builder(receiver).await;
+
+    });
 
 }
 
 #[cfg(feature="futures")]
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_build_state_with_spawn_catch_unwind()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_build_state_with_spawn_catch_unwind()
 {
 
     impl_task_actor_build_state_with_spawn_catch_unwind!(TestActor, TestPaincHander);
 
-    let panic_handler = Arc::new(TestPaincHander::new());
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    //
+        let panic_handler = Arc::new(TestPaincHander::new());
 
-    let (sender, receiver) = unbounded();
+        //
 
-    let state = TestActorState::new(sender);
+        let (sender, receiver) = unbounded();
 
-    TestActor::spawn_catch_unwind(state, &panic_handler);
+        let state = TestActorState::new(sender);
 
-    without_builder(receiver).await;
+        TestActor::spawn_catch_unwind(state, &panic_handler, this.executor_ref());
 
-    //
+        without_builder(receiver).await;
 
-    let (sender, receiver) = unbounded();
+        //
 
-    let state_builder = TestActorStateBuilder::new(sender);
+        let (sender, receiver) = unbounded();
 
-    TestActor::spawn_build_state_and_catch_unwind(state_builder, &panic_handler);
+        let state_builder = TestActorStateBuilder::new(sender);
 
-    with_builder(receiver).await;
+        TestActor::spawn_build_state_and_catch_unwind(state_builder, &panic_handler, this.executor_ref());
+
+        with_builder(receiver).await;
+
+    });
 
 }
 
 //flexible catch_unwind
 
 #[cfg(feature="futures")]
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_catch_unwind_flexible()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_catch_unwind_flexible()
 {
 
     impl_task_actor_catch_unwind_flexible!(TestActorFlow, TestPaincHander);
 
-    let (sender, receiver) = unbounded();
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let state = TestActorFlowState::new(sender);
+        let (sender, receiver) = unbounded();
 
-    let panic_handler = Arc::new(TestPaincHander::new());
+        let state = TestActorFlowState::new(sender);
 
-    TestActorFlow::spawn_catch_unwind(state, &panic_handler);
+        let panic_handler = Arc::new(TestPaincHander::new());
 
-    without_builder(receiver).await;
+        TestActorFlow::spawn_catch_unwind(state, &panic_handler, this.executor_ref());
+
+        without_builder(receiver).await;
+
+    });
 
 }
 
 #[cfg(feature="futures")]
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_build_state_and_catch_unwind_flexible()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_build_state_and_catch_unwind_flexible()
 {
 
     impl_task_actor_build_state_and_catch_unwind_flexible!(TestActorFlow, TestPaincHander);
 
-    let (sender, receiver) = unbounded();
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    let state_builder = TestActorFlowStateBuilder::new(sender);
+        let (sender, receiver) = unbounded();
 
-    let panic_handler = Arc::new(TestPaincHander::new());
+        let state_builder = TestActorFlowStateBuilder::new(sender);
 
-    TestActorFlow::spawn_build_state_and_catch_unwind(state_builder, &panic_handler);
+        let panic_handler = Arc::new(TestPaincHander::new());
 
-    with_builder(receiver).await;
+        TestActorFlow::spawn_build_state_and_catch_unwind(state_builder, &panic_handler, this.executor_ref());
+
+        with_builder(receiver).await;
+
+    });
 
 }
 
 #[cfg(feature="futures")]
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn task_actor_build_state_with_spawn_catch_unwind_flexible()
+//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[test]
+fn task_actor_build_state_with_spawn_catch_unwind_flexible()
 {
 
     impl_task_actor_build_state_with_spawn_catch_unwind_flexible!(TestActorFlow, TestPaincHander);
 
-    let panic_handler = Arc::new(TestPaincHander::new());
+    ThreadPool::with_threads_and_executor(get_nonzero_2()).block_on(async |this|
+    {
 
-    //
+        let panic_handler = Arc::new(TestPaincHander::new());
 
-    let (sender, receiver) = unbounded();
+        //
 
-    let state = TestActorFlowState::new(sender);
+        let (sender, receiver) = unbounded();
 
-    TestActorFlow::spawn_catch_unwind(state, &panic_handler);
+        let state = TestActorFlowState::new(sender);
 
-    without_builder(receiver).await;
+        TestActorFlow::spawn_catch_unwind(state, &panic_handler, this.executor_ref());
 
-    //
+        without_builder(receiver).await;
 
-    let (sender, receiver) = unbounded();
+        //
 
-    let state_builder = TestActorFlowStateBuilder::new(sender);
+        let (sender, receiver) = unbounded();
 
-    let panic_handler = Arc::new(TestPaincHander::new());
+        let state_builder = TestActorFlowStateBuilder::new(sender);
 
-    TestActorFlow::spawn_build_state_and_catch_unwind(state_builder, &panic_handler);
+        let panic_handler = Arc::new(TestPaincHander::new());
 
-    with_builder(receiver).await;
+        TestActorFlow::spawn_build_state_and_catch_unwind(state_builder, &panic_handler, this.executor_ref());
+
+        with_builder(receiver).await;
+
+    });
 
 }
 

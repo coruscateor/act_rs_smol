@@ -22,5 +22,5 @@ mod thread_pool;
 #[cfg(feature = "thread_pool")]
 pub use thread_pool::*;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "thread_pool"))]
 mod task_actor_macro_tests;
