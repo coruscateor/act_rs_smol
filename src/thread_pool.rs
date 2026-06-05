@@ -8,7 +8,7 @@ use std::io::Error;
 
 use accessorise::impl_get_ref;
 
-use inc_dec::IncDecSelf;
+use inc_dec::IncDecExt;
 
 use smol::Executor;
 
