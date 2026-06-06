@@ -4,7 +4,8 @@ use smol::channel::{Receiver, Sender, unbounded};
 
 use pastey::paste;
 
-use std::num::{NonZeroU32, NonZeroUsize};
+use std::num::NonZeroUsize;
+
 use std::{any::Any, panic::AssertUnwindSafe};
 
 use smol::Executor;
@@ -244,7 +245,6 @@ fn get_nonzero_2() -> NonZeroUsize
 
 }
 
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor()
 {
@@ -266,7 +266,6 @@ fn task_actor()
 
 }
 
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_build_state()
 {
@@ -288,7 +287,6 @@ fn task_actor_build_state()
 
 }
 
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_build_state_with_spawn()
 {
@@ -321,7 +319,6 @@ fn task_actor_build_state_with_spawn()
 
 }
 
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_flexible()
 {
@@ -343,7 +340,6 @@ fn task_actor_flexible()
 
 }
 
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_build_state_flexible()
 {
@@ -365,7 +361,6 @@ fn task_actor_build_state_flexible()
 
 }
 
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_build_state_with_spawn_flexible()
 {
@@ -400,7 +395,6 @@ fn task_actor_build_state_with_spawn_flexible()
 //catch_unwind
 
 #[cfg(feature="futures")]
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_catch_unwind()
 {
@@ -425,7 +419,6 @@ fn task_actor_catch_unwind()
 }
 
 #[cfg(feature="futures")]
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_build_state_and_catch_unwind()
 {
@@ -450,7 +443,6 @@ fn task_actor_build_state_and_catch_unwind()
 }
 
 #[cfg(feature="futures")]
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_build_state_with_spawn_catch_unwind()
 {
@@ -489,7 +481,6 @@ fn task_actor_build_state_with_spawn_catch_unwind()
 //flexible catch_unwind
 
 #[cfg(feature="futures")]
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_catch_unwind_flexible()
 {
@@ -514,7 +505,6 @@ fn task_actor_catch_unwind_flexible()
 }
 
 #[cfg(feature="futures")]
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_build_state_and_catch_unwind_flexible()
 {
@@ -539,7 +529,6 @@ fn task_actor_build_state_and_catch_unwind_flexible()
 }
 
 #[cfg(feature="futures")]
-//#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 #[test]
 fn task_actor_build_state_with_spawn_catch_unwind_flexible()
 {

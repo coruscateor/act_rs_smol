@@ -2,6 +2,9 @@
 
 use smol::Task;
 
+///
+/// Calls the detach method of the task when dropped.
+/// 
 pub struct AutoDetachTask<T, M = ()>
 {
 

@@ -22,6 +22,9 @@ use futures::executor::block_on;
 
 use pastey::paste;
 
+///
+/// A basic thread-pool.
+/// 
 pub struct ThreadPool
 {
 
