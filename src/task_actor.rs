@@ -1,11 +1,13 @@
 
 
 use std::panic::AssertUnwindSafe;
+
 #[cfg(feature="futures")]
 use std::{panic::UnwindSafe, sync::Arc};
 
 #[cfg(feature="futures")]
 use act_rs::AsyncPanicHandler;
+
 use smol::{Executor, Task};
 
 use act_rs::{ActorStateAsync, ActorStateBuilderAsync};
@@ -175,6 +177,7 @@ impl TaskActor
     ///
     /// Call ActorStateAsync methods on the provided state catching any unwinding panics. Intended to be used to run an actor.
     /// 
+    #[cfg(feature="futures")]
     pub async fn run_catch_unwind<ST>(mut state: ST)
         where ST: ActorStateAsync + Send + UnwindSafe + 'static //ActorStateUnwindSafeAsync
     {

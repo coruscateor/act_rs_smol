@@ -23,27 +23,45 @@ Act.rs smol is a minimal smol oriented actor framework.
 
 ## What Is An Actor?
 
-An actor is an object that runs in its own thread or task. You would usually communicate with it via channels.
-
-Actors have their own state, so ideally you just send a them messages indicating what you want done and you shouldn't necessarily need to move everything to do this work into the scope of each individual actor.
+An actor is an object that runs in its own thread or task. You would probably communicate with it via channels.
 
 <br />
 
-## A Basic Example
+## Related Actor Crates
+
+This crate uses types from [Act.rs](https://crates.io/crates/act_rs).
+
+See also: [Act.rs tokio](https://crates.io/crates/act_rs_tokio)
+
+<br />
+
+## An Example
 
 ```rust
 
     //Adapted from the std TwoPlusTwoActorState ThreadActor test (in Act.rs (act_rs)). 
 
-    //use crate::ActorState;
+    use smol::channel::{Sender, Receiver, unbounded};
+
+    use smol::Executor;
 
     use act_rs::ActorState;
 
-    use std::sync::mpsc::{Sender, channel};
+    use act_rs_smol::AutoDetachTask;
 
-    //use super::*;
+    //Requires the thread_pool feature.
 
-    use act_rs::std::ThreadActor;
+    use act_rs_smol::ThreadPool;
+
+    use core::num::NonZeroUsize;
+
+    use act_rs_smol::impl_task_actor;
+
+    //Need for impl_task_actor:
+
+    use act_rs::impl_pre_and_post_run_async;
+
+    use pastey::paste;
 
     struct TwoPlusTwoActorState
     {
@@ -68,13 +86,10 @@ Actors have their own state, so ideally you just send a them messages indicating
             }
 
         }
-        
-    }
 
-    impl ActorState for TwoPlusTwoActorState
-    {
+        impl_pre_and_post_run_async!();
 
-        fn run(&mut self) -> bool
+        async fn run_async(&mut self) -> bool
         {
 
             if self.number < 4
@@ -84,7 +99,7 @@ Actors have their own state, so ideally you just send a them messages indicating
 
                 let message = format!("two plus two is: {}", self.number);
 
-                if let Err(_) = self.client_sender.send(message)
+                if let Err(_) = self.client_sender.send(message).await
                 {
 
                     return false;
@@ -98,19 +113,28 @@ Actors have their own state, so ideally you just send a them messages indicating
             false
             
         }
-
+        
     }
+
+    impl_task_actor!(TwoPlusTwoActor);
 
     fn main()
     {
 
-        let (sender, receiver) = channel();
+        let nonzero_val = NonZeroUsize::new(2).unwrap();
 
-        ThreadActor::spawn(TwoPlusTwoActorState::new(sender));
+        ThreadPool::with_threads_and_executor(nonzero_val).block_on(async |this|
+        {
 
-        let res = receiver.recv().expect("Error: Message not delivered");
+            let (sender, receiver) = unbounded();
 
-        println!("{}", res);
+            TwoPlusTwoActor::spawn(TwoPlusTwoActorState::new(sender), this.executor_ref());
+
+            let res = receiver.recv().await.expect("Error: Message not delivered");
+
+            println!("{}", res);
+
+        });
 
     }
 
@@ -118,55 +142,31 @@ Actors have their own state, so ideally you just send a them messages indicating
 
 <br />
 
-In the above example an actor sends a String message to the main thread which prints it out.
+## Features
 
-Note that the actor continues or stops running depending on whether you return true or false from the run method. This is the run phase of the actor. There are also pre-run and post-run phases represented by pre_run and post_run methods which can also be manually implemented.
-
-This is also the case with async actors as well, but each method you implement has an additional "_async" on the end of its name.
-
-Lastly Act.rs actors do not handle communications or errors by default. It is left up to you to decide how to handle these issues.
-
-<br />
-
-
-## An Overview
-
-You create a state struct that contains the state of your actor.
-
-This state struct should implement either ActorState or ActorStateAsync depending on whether or not you want the actor to be async compatible (Macro generated actors don't have this requirement and the state struct can implement the required methods in its impl block).
-
-Finally pass the state into the actor spawn method and there you have your actor, which basically runs until its run method returns false.
+| Feature      | Description                                                                                         |
+| -----------  | --------------------------------------------------------------------------------------------------- |
+| inc_dec      | Enable the IncDec dependency.                                                                       |
+| futures-lite | Enable the futures-lite dependency.                                                                 |
+| accessorise  | Enable the Accessorise dependency.                                                                  |
+| pastey       | Enable the pastey dependency.                                                                       |
+| futures      | Enable the futures dependency.                                                                      |
+| async-trait  | Enable the TaskActor struct and the act_rs/async-trait  dependency.                                 |
+| thread_pool  | Enable the ThreadPool struct and the inc_dec, accessorise, pastey dependencies. Also depends on std.|
 
 <br />
 
-## Pipelining
-
-Actors can be used to help you setup pipelines.
-
-You would setup a pipeline to divide work into stages which potentially would be performed on different threads depending on what kind of actors you chose among other things.
+Note: thread_pool requires the futures or the futures-lite features to be enabled.
 
 <br />
 
-## Potential Issues When Setting Up
+## More Examples
 
-When setting up your actors with input channels or message queues, you should:
+- [Req It](https://github.com/coruscateor/req_it)
 
-- Make sure that your actors don't wait excessively or get stuck (wait indefinitely) when doing work.
-- If you are using actors as part of a pipeline; watch out for message loops.
-- Make sure that your actors don't exit unexpectedly.
-- Check for bottlenecks and possibly implement a way to add actors and remove actors from a particular stage or channel dynamically (pipelines).
+- [Escape It](https://github.com/coruscateor/escape_it)
 
-If you follow these guidelines you should have a productive time using Act.rs.
-
-<br />
-
-## Examples (Not Using smol)
-
-- [Req It](https://github.com/coruscateor/req_it/blob/latest/src/actors/graphql_actor.rs)
-
-- [Escape It](https://github.com/coruscateor/escape_it/blob/latest/src/conversion_actor.rs)
-
-- [Act.rs Async Traits Test](https://github.com/coruscateor/act_rs_async_traits_test/tree/latest)
+- [Mapage](https://github.com/coruscateor/mapage)
 
 - [Mapage Types Viewer](https://github.com/coruscateor/mapage_types_viewer)
 
@@ -175,13 +175,12 @@ If you follow these guidelines you should have a productive time using Act.rs.
 ## Todo
 
 - Add more documentation
-- Add examples
-- Add tests
+- Add more examples
+- Add mmore tests
 - Cleanup the code
-- Add methods to all actor structs and macros which allow you to construct the actor-state in the actors thread or task, passing in any necessary parameters in order to do this e.g. channel sender and receiver objects.
-- Add procedural macros which generate actor types based on associated actor states.
-- Make the inclusion of the async_trait dependency and dependant types optional.
-- Implement a way to run an Executor instance on multiple standard threads.
+
+## Maybe
+
 - Enable the crate to be used in no_std environments.
 
 <br />
