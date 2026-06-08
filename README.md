@@ -150,13 +150,13 @@ See also: [Act.rs tokio](https://crates.io/crates/act_rs_tokio)
 | futures-lite | Enable the futures-lite dependency.                                                                 |
 | accessorise  | Enable the Accessorise dependency.                                                                  |
 | pastey       | Enable the pastey dependency.                                                                       |
-| futures      | Enable the futures dependency.                                                                      |
+| futures      | Enable the futures dependency, also includes std.                                                                    |
 | async-trait  | Enable the TaskActor struct and the act_rs/async-trait  dependency.                                 |
 | thread_pool  | Enable the ThreadPool struct and the inc_dec, accessorise, pastey dependencies. Also depends on std.|
 
 <br />
 
-Note: thread_pool requires the futures or the futures-lite features to be enabled.
+**Note:** thread_pool requires the futures or the futures-lite features to be enabled.
 
 <br />
 

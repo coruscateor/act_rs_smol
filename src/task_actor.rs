@@ -1,5 +1,4 @@
-
-
+#[cfg(feature="futures")]
 use std::panic::AssertUnwindSafe;
 
 #[cfg(feature="futures")]
@@ -8,7 +7,7 @@ use std::{panic::UnwindSafe, sync::Arc};
 #[cfg(feature="futures")]
 use act_rs::AsyncPanicHandler;
 
-use smol::{Executor, Task};
+use smol::Executor;
 
 use act_rs::{ActorStateAsync, ActorStateBuilderAsync};
 

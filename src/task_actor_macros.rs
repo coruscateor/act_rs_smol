@@ -16,23 +16,19 @@
 
     directly
 
-    Also smol::{Executor, Task} and paste::paste must be in module scope.
+    Also smol::Executor and paste::paste or pastey::paste must be in module scope.
 
-    The latter is a macro from the [paste crate](https://crates.io/crates/paste).
+    The latter is a macro from the [paste](https://crates.io/crates/paste) and [pastey](https://crates.io/crates/pastey) crates.
 
-    Works with version 1.0.15 and above.
+    It should complie with the latest versions.
 
-
-
-    The name of the state type is generated from the provided $actor_type.
+    The name of the state type is partially generated from the provided $actor_type.
 
     As part of the macro output process "State" is appended to the provided $actor_type macro identity parameter, this type is required by the generated spawn method.
-    
-
 
     The returned bool values from the pre_run_async and run_async method implementations indicate whether or not the actors execution should proceed.
 
-    The post_run_async method is called regardless.
+    The post_run_async method is called regardless, unless a panic occurred earlier.
 
 */
 #[macro_export]
@@ -96,9 +92,9 @@ macro_rules! impl_task_actor
 }
 
 /**
- * Similar to impl_mac_task_actor, but the produced spawn method takes an actor state builder object instead of the actor state itself.
+ * Similar to impl_task_actor, but builds the actor state instace in the actors thread.
  * 
- * Requires everything that impl_mac_task_actor does, but also that an actor state builder type with a method "build_async" that returns an optional actor state object share the scope of the macro call.
+ * Requires everything that impl_task_actor does, but also that an actor state builder type with a method "build_async" that returns an optional actor state object share the scope of the macro call.
  * 
  * The actor state builder type name consists of the provided actor type name with "StateBuilder" appended.
  * 
