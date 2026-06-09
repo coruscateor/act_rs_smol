@@ -71,9 +71,9 @@ impl ThreadPool
 
         let join_handles = {
             
-        let mut number_of_threads: usize = number.into();
+            let mut number_of_threads: usize = number.into();
 
-        let mut new_join_handles = Vec::with_capacity(number_of_threads);
+            let mut new_join_handles = Vec::with_capacity(number_of_threads);
             
             while number_of_threads > 0
             {

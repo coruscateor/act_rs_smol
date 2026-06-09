@@ -5,7 +5,7 @@
 [![Crates.io](https://img.shields.io/crates/v/act_rs_smol)](https://crates.io/crates/act_rs_smol)
 [![License](https://img.shields.io/badge/license-MIT%2FApache-blue)](#license)
 [![Downloads](https://img.shields.io/crates/d/act_rs_smol)](https://crates.io/crates/act_rs_smol)
-[![Docs](https://docs.rs/act_rs_smol/badge.svg)](https://docs.rs/act_rs_smol/latest/act_rs_smol/)
+[![Docs](https://docs.rs/act_rs_smol/badge.svg)](https://docs.rs/act_rs_smol/latest/act_rs_smol)
 [![Twitch Status](https://img.shields.io/twitch/status/coruscateor)](https://www.twitch.tv/coruscateor)
 
 [X](https://twitter.com/Coruscateor) | 
@@ -150,7 +150,7 @@ See also: [Act.rs tokio](https://crates.io/crates/act_rs_tokio)
 | futures-lite | Enable the futures-lite dependency.                                                                 |
 | accessorise  | Enable the Accessorise dependency.                                                                  |
 | pastey       | Enable the pastey dependency.                                                                       |
-| futures      | Enable the futures dependency, also includes std.                                                                    |
+| futures      | Enable the futures dependency, also includes std.                                                   |
 | async-trait  | Enable the TaskActor struct and the act_rs/async-trait  dependency.                                 |
 | thread_pool  | Enable the ThreadPool struct and the inc_dec, accessorise, pastey dependencies. Also depends on std.|
 

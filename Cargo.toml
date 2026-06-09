@@ -30,8 +30,8 @@ futures = { version ="0.3.32", optional = true }
 
 [features]
 async-trait = ["act_rs/async-trait"]
-thread_pool = ["inc_dec", "accessorise", "pastey"] #"futures-lite", 
+thread_pool = ["inc_dec", "accessorise", "pastey"]
 
 [package.metadata.docs.rs]
-all-features = true
+features = ["async-trait", "thread_pool", "futures"]
 rustdoc-args = ["--cfg", "docsrs"]
