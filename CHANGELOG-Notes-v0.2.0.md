@@ -28,7 +28,7 @@ Date:   Fri Jun 5 17:21:56 2026 +1200
 
     - Updated the inc_dec dependency to version 0.2.0.
 
-commit 886d1d5b509a4212f791db1bbb583f86a4381323
+commit 886d1d5b509a4212f791db1bbb583f86a4381323 -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Mon May 25 16:52:33 2026 +1200
 
@@ -44,7 +44,7 @@ Date:   Mon May 25 16:52:33 2026 +1200
     
     - Made the ThreadPool implementation compatible with both the futures_lite and futures crates.
 
-commit 3165711b195736e7cab4ab9030761ba2cd4357f1
+commit 3165711b195736e7cab4ab9030761ba2cd4357f1 -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Sun May 24 19:39:24 2026 +1200
 
@@ -52,13 +52,13 @@ Date:   Sun May 24 19:39:24 2026 +1200
     
     - Added the  impl_task_actor_build_state_with_spawn_catch_unwind, impl_task_actor_catch_unwind_flexible, impl_task_actor_build_state_and_catch_unwind_flexible and impl_task_actor_build_state_with_spawn_catch_unwind_flexible macros.
 
-commit ce2cf7c430cccca59e80f30dbf02e72bbb1ef822
+commit ce2cf7c430cccca59e80f30dbf02e72bbb1ef822 -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Sat May 23 18:27:31 2026 +1200
 
     - Added the impl_task_actor_catch_unwind and impl_task_actor_build_state_and_catch_unwind macros.
 
-commit 34977d80d914e01903feb39b2cb0dcfca1e79e5d
+commit 34977d80d914e01903feb39b2cb0dcfca1e79e5d -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Fri May 22 18:41:41 2026 +1200
 
@@ -66,7 +66,7 @@ Date:   Fri May 22 18:41:41 2026 +1200
     
     - Removed the .vscode directory.
 
-commit 59d025b40aef84fbf848ae57f668927e6c8ca1ba
+commit 59d025b40aef84fbf848ae57f668927e6c8ca1ba -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Fri May 22 17:27:01 2026 +1200
 
@@ -74,7 +74,7 @@ Date:   Fri May 22 17:27:01 2026 +1200
     
     - Continued work on the ThreadPool.
 
-commit 4b0121698a9b41928ab3cf78cd360ce7da304e87
+commit 4b0121698a9b41928ab3cf78cd360ce7da304e87 -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Thu May 21 17:38:11 2026 +1200
 
@@ -84,7 +84,7 @@ Date:   Thu May 21 17:38:11 2026 +1200
     
     - Continued work on the ThreadPool object.
 
-commit 6faa86fbe60017cc2138c535e0de459f5f94040e
+commit 6faa86fbe60017cc2138c535e0de459f5f94040e -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Wed May 20 18:33:46 2026 +1200
 
@@ -96,7 +96,7 @@ Date:   Wed May 20 18:33:46 2026 +1200
     
     - Added a ThreadPool struct.
 
-commit 2a2415cf5e97d315a24c5876b834e699637c31f8
+commit 2a2415cf5e97d315a24c5876b834e699637c31f8 -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Mon May 18 19:03:04 2026 +1200
 
@@ -106,7 +106,7 @@ Date:   Mon May 18 19:03:04 2026 +1200
     
     - Renamed the mac_task_actors module to task_actor_macros.
 
-commit eda43f9db8d909cadbc077a1402d69b9f1780b7d
+commit eda43f9db8d909cadbc077a1402d69b9f1780b7d -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Wed May 13 13:09:38 2026 +1200
 
@@ -126,7 +126,7 @@ Date:   Wed May 13 13:09:38 2026 +1200
     
     - The spawn_attached method of the TaskActor implementation has been removed.
 
-commit 65bf4d91a1644a040774c5a447b7c7f9fc9f0426
+commit 65bf4d91a1644a040774c5a447b7c7f9fc9f0426 -
 Author: Paul Saunders <coruscateor@users.noreply.github.com>
 Date:   Wed Mar 18 19:50:58 2026 +1300
 
