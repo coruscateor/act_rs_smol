@@ -61,6 +61,10 @@ commit 65bf4d91a1644a040774c5a447b7c7f9fc9f0426
 
 - Added the AutoDetachTask struct.
 
+ef0f86117169be9a2dc7f75335f5a71993d18bb8
+
+- Added a features field with values to the package.metadata.docs.rs section in the cargo.toml file.
+
 
 
 ### Changed
@@ -135,6 +139,10 @@ commit 65bf4d91a1644a040774c5a447b7c7f9fc9f0426
 
 - Made made the presence of the TaskActor struct dependant on the newly added async-trait feature.
 
+ef0f86117169be9a2dc7f75335f5a71993d18bb8
+
+-- Updated the readme.
+
 
 
 ### Deprecated
@@ -158,6 +166,10 @@ commit eda43f9db8d909cadbc077a1402d69b9f1780b7d
 - Removed the spawn_attached meta-method of the impl_task_actor_build_state macro.
 
 - The spawn_attached method of the TaskActor implementation has been removed.
+
+ef0f86117169be9a2dc7f75335f5a71993d18bb8
+
+- Removed the all-features field from the package.metadata.docs.rs section in the cargo.toml file.
 
 
 
