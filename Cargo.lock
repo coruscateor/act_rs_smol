@@ -19,7 +19,7 @@ dependencies = [
 
 [[package]]
 name = "act_rs_smol"
-version = "0.2.0-beta"
+version = "0.2.0"
 dependencies = [
  "accessorise",
  "act_rs",
